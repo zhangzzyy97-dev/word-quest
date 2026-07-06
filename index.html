@@ -10594,13 +10594,16 @@ function renderPlan() {
       </div>
     </div>`;
 
+  // 构建已打卡天数集合
+  const checkedDays = new Set(Object.values(u.checkedIn || {}));
+
   // 词汇
   html += `<div class="collapse-block open" onclick="this.classList.toggle('open')">
     <div class="collapse-head"><span>📚 词汇 (${CONTENT.vocab.length})</span><span class="arrow">▼</span></div>
     <div class="collapse-body"><div class="day-grid">`;
   CONTENT.vocab.forEach((v, i) => {
     const n = i + 1;
-    const done = n < u.currentDay;
+    const done = checkedDays.has(n);
     const today = n === u.currentDay;
     const cnt = (v.b2b?.length||0)+(v.ecom?.length||0)+(v.data?.length||0)+(v.idioms?.length||0);
     html += `<div class="day-card ${done?'done':''} ${today?'today':''}" onclick="event.stopPropagation();jump('vocab',${n})">
@@ -10621,7 +10624,7 @@ function renderPlan() {
   if (pLen > 0) {
     CONTENT.practical.forEach((p, i) => {
       const n = i + 1;
-      const done = n < u.currentDay;
+      const done = checkedDays.has(n);
       const today = n === u.currentDay;
       html += `<div class="day-card ${done?'done':''} ${today?'today':''}" onclick="event.stopPropagation();jump('practical',${n})">
         <div class="day-tag">D${n}</div>
@@ -10642,7 +10645,7 @@ function renderPlan() {
   if (iLen > 0) {
     CONTENT.ielts.forEach((it, i) => {
       const n = i + 1;
-      const done = n < u.currentDay;
+      const done = checkedDays.has(n);
       const today = n === u.currentDay;
       html += `<div class="day-card ${done?'done':''} ${today?'today':''}" onclick="event.stopPropagation();jump('ielts',${n})">
         <div class="day-tag">D${n}</div>
