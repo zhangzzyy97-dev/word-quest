@@ -9893,10 +9893,13 @@ function prevDay() {
 }
 function bottomBar(showCheckin) {
   const d = cu().currentDay;
-  const checkedDays = new Set(Object.values(cu().checkedIn || {}));
+  const checkedDays = getCheckedDays();
   const dayChecked = checkedDays.has(d);
+  const nextDayToLearn = getStreak() + 1;
+  // 打卡按钮显示条件：已打卡的天（可取消）或 下一个该学的天（可打卡）
+  const showBtn = showCheckin && (dayChecked || d === nextDayToLearn);
   let checkinBtn = '';
-  if (showCheckin) {
+  if (showBtn) {
     checkinBtn = `<button class="btn ${dayChecked ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCheckin()" style="flex:1.2;">
       ${dayChecked ? '✓ 已打卡' : '🎉 打卡完成'}
     </button>`;
@@ -9913,7 +9916,8 @@ function renderHome() {
   const u = cu();
   const streak = getStreak(u);
   const favN = (u.favorites?.length || 0);
-  const d = u.currentDay;
+  const nextDay = streak + 1 > TOTAL_DAYS ? TOTAL_DAYS : streak + 1;
+  const d = nextDay; // 首页显示下一个该学的天，不是浏览到的天
   const v = getDayContent(d).vocab;
   const p = getDayContent(d).practical;
   const i = getDayContent(d).ielts;
@@ -9950,7 +9954,7 @@ function renderHome() {
 
     <div class="sec-title"><h3>今日学习</h3><span class="meta">Day ${d}</span></div>
 
-    <div class="module-card vocab" onclick="currentModule='vocab';go('vocab')">
+    <div class="module-card vocab" onclick="cu().currentDay=${d};currentModule='vocab';go('vocab')">
       <div class="mod-icon">📚</div>
       <div class="mod-body">
         <div class="mod-title">词汇副本</div>
@@ -9960,7 +9964,7 @@ function renderHome() {
       <div class="mod-arrow">›</div>
     </div>
 
-    <div class="module-card practical" onclick="currentModule='practical';go('practical')">
+    <div class="module-card practical" onclick="cu().currentDay=${d};currentModule='practical';go('practical')">
       <div class="mod-icon">💬</div>
       <div class="mod-body">
         <div class="mod-title">实战副本</div>
@@ -9970,7 +9974,7 @@ function renderHome() {
       <div class="mod-arrow">›</div>
     </div>
 
-    <div class="module-card ielts" onclick="currentModule='ielts';go('ielts')">
+    <div class="module-card ielts" onclick="cu().currentDay=${d};currentModule='ielts';go('ielts')">
       <div class="mod-icon">🎯</div>
       <div class="mod-body">
         <div class="mod-title">雅思口语</div>
@@ -10027,15 +10031,24 @@ function toggleCheckin() {
     u.checkedIn = newCI;
   }
 
+  const streak = getStreak(u);
+
   if (u.checkedIn[d]) {
-    // 已打卡 → 取消
+    // 已打卡 → 取消（只能取消最后打的那一天）
+    if (d !== streak) {
+      alert('只能取消最近一天的打卡哦');
+      return;
+    }
     delete u.checkedIn[d];
     saveUsers();
     alert('已取消打卡 Day ' + d);
   } else {
-    // 未打卡 → 打卡
+    // 未打卡 → 打卡（只能按顺序打，不能跳）
+    if (d !== streak + 1) {
+      alert('先学好 Day ' + (streak + 1) 再来打卡吧～');
+      return;
+    }
     u.checkedIn[d] = today;
-    if (u.currentDay < TOTAL_DAYS) u.currentDay++;
     saveUsers();
     alert('🎉 打卡成功，Day ' + d);
   }
@@ -10613,6 +10626,7 @@ function switchUser(i) {
 function renderPlan() {
   const u = cu();
   const streak = getStreak(u);
+  const nextDay = streak + 1; // 下一个该学的天
 
   let html = nav('🗺️ 21天计划', true);
   html += `<div class="plan-page">
@@ -10620,7 +10634,7 @@ function renderPlan() {
       <div class="plan-avatar">${getAvatarHtml(u.avatar)}</div>
       <div class="plan-info">
         <div class="plan-name">${u.name}</div>
-        <div class="plan-prog">Day ${u.currentDay}/21 · 打卡 ${streak} 天</div>
+        <div class="plan-prog">Day ${nextDay}/21 · 打卡 ${streak} 天</div>
       </div>
     </div>`;
 
@@ -10634,7 +10648,7 @@ function renderPlan() {
   CONTENT.vocab.forEach((v, i) => {
     const n = i + 1;
     const done = checkedDays.has(n);
-    const today = n === u.currentDay;
+    const today = n === nextDay;
     const cnt = (v.b2b?.length||0)+(v.ecom?.length||0)+(v.data?.length||0)+(v.idioms?.length||0);
     html += `<div class="day-card ${done?'done':''} ${today?'today':''}" onclick="event.stopPropagation();jump('vocab',${n})">
       <div class="day-tag">D${n}</div>
@@ -10655,7 +10669,7 @@ function renderPlan() {
     CONTENT.practical.forEach((p, i) => {
       const n = i + 1;
       const done = checkedDays.has(n);
-      const today = n === u.currentDay;
+      const today = n === nextDay;
       html += `<div class="day-card ${done?'done':''} ${today?'today':''}" onclick="event.stopPropagation();jump('practical',${n})">
         <div class="day-tag">D${n}</div>
         <div class="day-txt">
@@ -10676,7 +10690,7 @@ function renderPlan() {
     CONTENT.ielts.forEach((it, i) => {
       const n = i + 1;
       const done = checkedDays.has(n);
-      const today = n === u.currentDay;
+      const today = n === nextDay;
       html += `<div class="day-card ${done?'done':''} ${today?'today':''}" onclick="event.stopPropagation();jump('ielts',${n})">
         <div class="day-tag">D${n}</div>
         <div class="day-txt">
