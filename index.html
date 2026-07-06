@@ -30,6 +30,8 @@ body {
 .sub-nav-back { font-size: 14px; color: #0284c7; font-weight: 600; cursor: pointer; min-width: 50px; }
 .sub-nav-back:active { opacity: 0.6; }
 .sub-nav-title { font-size: 14.5px; font-weight: 600; color: #1e293b; }
+.nav-day-title { cursor: pointer; }
+.nav-day-title:active { opacity: 0.6; }
 .sub-nav-right { font-size: 13px; color: #0284c7; font-weight: 500; cursor: pointer; min-width: 50px; text-align: right; }
 
 /* ===== 首页 ===== */
@@ -9881,13 +9883,29 @@ function buildPages() {
     </div>
   </div>`;
   document.body.insertAdjacentHTML('beforeend', editGoalHtml);
+
+  // 天数选择器弹窗
+  const dayPickerHtml = `
+  <div id="dayPickerModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:white;width:85%;max-width:320px;border-radius:14px;padding:16px;max-height:70vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:15px;font-weight:700;">跳转到第几天</div>
+        <div style="color:#999;font-size:14px;cursor:pointer;" onclick="hideDayPicker()">✕</div>
+      </div>
+      <div id="dayPickerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', dayPickerHtml);
 }
 
-function nav(title, showBack, rightTxt, rightFn) {
+function nav(title, showBack, rightTxt, rightFn, dayPicker) {
   showBack = showBack !== false;
+  const titleHtml = dayPicker
+    ? `<div class="nav-day-title" onclick="showDayPicker()">${title} <span style="font-size:10px;">▼</span></div>`
+    : title;
   return `<div class="sub-nav">
     <div class="sub-nav-back" onclick="${showBack ? 'back()' : ''}">${showBack ? '← 返回' : ''}</div>
-    <div class="sub-nav-title">${title}</div>
+    <div class="sub-nav-title">${titleHtml}</div>
     <div class="sub-nav-right" onclick="${rightFn || ''}">${rightTxt || ''}</div>
   </div>`;
 }
@@ -10088,7 +10106,7 @@ function renderVocab() {
   const data = getDayContent(d).vocab;
   currentModule = 'vocab';
 
-  let html = nav('📚 Day ' + d + ' / 21', true);
+  let html = nav('📚 Day ' + d + ' / 21', true, '', '', true);
   html += '<div class="vocab-page">';
 
   if (!data) {
@@ -10158,7 +10176,7 @@ function renderPractical() {
   const data = getDayContent(d).practical;
   currentModule = 'practical';
 
-  let html = nav('💬 Day ' + d + ' / 21', true);
+  let html = nav('💬 Day ' + d + ' / 21', true, '', '', true);
   html += '<div class="prac-page">';
 
   if (!data) {
@@ -10231,7 +10249,7 @@ function renderIelts() {
   const data = getDayContent(d).ielts;
   currentModule = 'ielts';
 
-  let html = nav('🎯 Day ' + d + ' / 21', true);
+  let html = nav('🎯 Day ' + d + ' / 21', true, '', '', true);
   html += '<div class="ielts-page">';
 
   if (!data) {
@@ -10846,6 +10864,39 @@ function confirmEditGoal() {
   if (editGoalIndex === currentUserIndex) {
     renderHome();
   }
+}
+
+// ===== 天数选择器 =====
+function showDayPicker() {
+  const modal = document.getElementById('dayPickerModal');
+  if (modal) modal.style.display = 'flex';
+  const grid = document.getElementById('dayPickerGrid');
+  if (!grid) return;
+  const d = cu().currentDay;
+  const checkedDays = getCheckedDays(cu());
+  let html = '';
+  for (let i = 1; i <= TOTAL_DAYS; i++) {
+    const isCur = i === d;
+    const isDone = checkedDays.has(i);
+    const bg = isCur ? '#0284c7' : isDone ? '#10b981' : '#f1f5f9';
+    const color = (isCur || isDone) ? 'white' : '#475569';
+    html += `<div onclick="jumpToDay(${i})" style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:${bg};color:${color};">${i}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function hideDayPicker() {
+  const modal = document.getElementById('dayPickerModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function jumpToDay(day) {
+  if (day < 1 || day > TOTAL_DAYS) return;
+  cu().currentDay = day;
+  saveUsers();
+  hideDayPicker();
+  const mod = currentModule || 'vocab';
+  go(mod);
 }
 
 // ===== 日历 =====
