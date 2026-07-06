@@ -9747,6 +9747,15 @@ function loadUsers() {
 
 function saveUsers() { localStorage.setItem(STORAGE_KEY, JSON.stringify(users)); }
 function cu() { return users[currentUserIndex]; }
+// 计算已打卡天数
+function getStreak() {
+  const ci = cu().checkedIn || {};
+  const vals = Object.values(ci);
+  // 旧格式 {日期: 天数} → 值是数字
+  if (vals.some(v => typeof v === "number")) return vals.length;
+  // 新格式 {天数: 日期} → 键是数字
+  return Object.keys(ci).filter(k => !isNaN(parseInt(k))).length;
+}
 function curDay() { return cu().currentDay; }
 // 获取已打卡天数集合，兼容新旧两种格式
 function getCheckedDays(user) {
@@ -9893,11 +9902,10 @@ function prevDay() {
 }
 function bottomBar(showCheckin) {
   const d = cu().currentDay;
-  const checkedDays = getCheckedDays();
+  const checkedDays = new Set(Object.values(cu().checkedIn || {}));
   const dayChecked = checkedDays.has(d);
-  const nextDayToLearn = getStreak() + 1;
-  // 打卡按钮显示条件：已打卡的天（可取消）或 下一个该学的天（可打卡）
-  const showBtn = showCheckin && (dayChecked || d === nextDayToLearn);
+  const streak = getStreak();
+  const showBtn = showCheckin && (dayChecked || d === streak + 1);
   let checkinBtn = '';
   if (showBtn) {
     checkinBtn = `<button class="btn ${dayChecked ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCheckin()" style="flex:1.2;">
@@ -9916,8 +9924,7 @@ function renderHome() {
   const u = cu();
   const streak = getStreak(u);
   const favN = (u.favorites?.length || 0);
-  const nextDay = streak + 1 > TOTAL_DAYS ? TOTAL_DAYS : streak + 1;
-  const d = nextDay; // 首页显示下一个该学的天，不是浏览到的天
+  const d = u.currentDay;
   const v = getDayContent(d).vocab;
   const p = getDayContent(d).practical;
   const i = getDayContent(d).ielts;
@@ -9954,7 +9961,7 @@ function renderHome() {
 
     <div class="sec-title"><h3>今日学习</h3><span class="meta">Day ${d}</span></div>
 
-    <div class="module-card vocab" onclick="cu().currentDay=${d};currentModule='vocab';go('vocab')">
+    <div class="module-card vocab" onclick="currentModule='vocab';go('vocab')">
       <div class="mod-icon">📚</div>
       <div class="mod-body">
         <div class="mod-title">词汇副本</div>
@@ -9964,7 +9971,7 @@ function renderHome() {
       <div class="mod-arrow">›</div>
     </div>
 
-    <div class="module-card practical" onclick="cu().currentDay=${d};currentModule='practical';go('practical')">
+    <div class="module-card practical" onclick="currentModule='practical';go('practical')">
       <div class="mod-icon">💬</div>
       <div class="mod-body">
         <div class="mod-title">实战副本</div>
@@ -9974,7 +9981,7 @@ function renderHome() {
       <div class="mod-arrow">›</div>
     </div>
 
-    <div class="module-card ielts" onclick="cu().currentDay=${d};currentModule='ielts';go('ielts')">
+    <div class="module-card ielts" onclick="currentModule='ielts';go('ielts')">
       <div class="mod-icon">🎯</div>
       <div class="mod-body">
         <div class="mod-title">雅思口语</div>
@@ -10031,24 +10038,18 @@ function toggleCheckin() {
     u.checkedIn = newCI;
   }
 
-  const streak = getStreak(u);
-
+  const streak = getStreak();
   if (u.checkedIn[d]) {
-    // 已打卡 → 取消（只能取消最后打的那一天）
-    if (d !== streak) {
-      alert('只能取消最近一天的打卡哦');
-      return;
-    }
+    // 已打卡 → 取消（只能取消最后一天）
+    if (d !== streak) { alert('只能取消最近一天的打卡哦'); return; }
     delete u.checkedIn[d];
     saveUsers();
     alert('已取消打卡 Day ' + d);
   } else {
-    // 未打卡 → 打卡（只能按顺序打，不能跳）
-    if (d !== streak + 1) {
-      alert('先学好 Day ' + (streak + 1) 再来打卡吧～');
-      return;
-    }
+    // 未打卡 → 打卡（只能按顺序打）
+    if (d !== streak + 1) { alert('先学好 Day ' + (streak+1) + ' 再来打卡吧～'); return; }
     u.checkedIn[d] = today;
+    if (u.currentDay < TOTAL_DAYS) u.currentDay++;
     saveUsers();
     alert('🎉 打卡成功，Day ' + d);
   }
@@ -10626,7 +10627,7 @@ function switchUser(i) {
 function renderPlan() {
   const u = cu();
   const streak = getStreak(u);
-  const nextDay = streak + 1; // 下一个该学的天
+  const nextDay = streak + 1;
 
   let html = nav('🗺️ 21天计划', true);
   html += `<div class="plan-page">
