@@ -9902,12 +9902,10 @@ function prevDay() {
 }
 function bottomBar(showCheckin) {
   const d = cu().currentDay;
-  const checkedDays = new Set(Object.values(cu().checkedIn || {}));
+  const checkedDays = getCheckedDays();
   const dayChecked = checkedDays.has(d);
-  const streak = getStreak();
-  const showBtn = showCheckin && (dayChecked || d === streak + 1);
   let checkinBtn = '';
-  if (showBtn) {
+  if (showCheckin) {
     checkinBtn = `<button class="btn ${dayChecked ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCheckin()" style="flex:1.2;">
       ${dayChecked ? '✓ 已打卡' : '🎉 打卡完成'}
     </button>`;
@@ -10039,17 +10037,15 @@ function toggleCheckin() {
   }
 
   const streak = getStreak();
+
   if (u.checkedIn[d]) {
-    // 已打卡 → 取消（只能取消最后一天）
-    if (d !== streak) { alert('只能取消最近一天的打卡哦'); return; }
+    // 已打卡 → 取消
     delete u.checkedIn[d];
     saveUsers();
     alert('已取消打卡 Day ' + d);
   } else {
-    // 未打卡 → 打卡（只能按顺序打）
-    if (d !== streak + 1) { alert('先学好 Day ' + (streak+1) + ' 再来打卡吧～'); return; }
+    // 未打卡 → 打卡
     u.checkedIn[d] = today;
-    if (u.currentDay < TOTAL_DAYS) u.currentDay++;
     saveUsers();
     alert('🎉 打卡成功，Day ' + d);
   }
