@@ -9748,6 +9748,21 @@ function loadUsers() {
 function saveUsers() { localStorage.setItem(STORAGE_KEY, JSON.stringify(users)); }
 function cu() { return users[currentUserIndex]; }
 function curDay() { return cu().currentDay; }
+// 获取已打卡天数集合，兼容新旧两种格式
+function getCheckedDays(user) {
+  const u = user || cu();
+  const ci = u.checkedIn || {};
+  const keys = Object.keys(ci);
+  const days = new Set();
+  keys.forEach(k => {
+    const v = ci[k];
+    if (typeof v === 'number') days.add(v); // 旧格式 {日期: 天数}
+    else { const n = parseInt(k); if (!isNaN(n)) days.add(n); } // 新格式 {天数: 日期}
+  });
+  return days;
+}
+// 获取已打卡天数
+function getStreak(user) { return getCheckedDays(user).size; }
 
 function go(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -9878,12 +9893,12 @@ function prevDay() {
 }
 function bottomBar(showCheckin) {
   const d = cu().currentDay;
-  const today = new Date().toDateString();
-  const hasCheckedIn = cu().checkedIn && cu().checkedIn[today];
+  const checkedDays = new Set(Object.values(cu().checkedIn || {}));
+  const dayChecked = checkedDays.has(d);
   let checkinBtn = '';
   if (showCheckin) {
-    checkinBtn = `<button class="btn ${hasCheckedIn ? 'btn-secondary' : 'btn-primary'}" onclick="doCheckin()" style="flex:1.2;">
-      ${hasCheckedIn ? '✓ 已打卡' : '🎉 打卡完成'}
+    checkinBtn = `<button class="btn ${dayChecked ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCheckin()" style="flex:1.2;">
+      ${dayChecked ? '✓ 已打卡' : '🎉 打卡完成'}
     </button>`;
   }
   return `<div class="bottom-bar">
@@ -9896,7 +9911,7 @@ function bottomBar(showCheckin) {
 // ===== 首页 =====
 function renderHome() {
   const u = cu();
-  const streak = Object.keys(u.checkedIn || {}).length;
+  const streak = getStreak(u);
   const favN = (u.favorites?.length || 0);
   const d = u.currentDay;
   const v = getDayContent(d).vocab;
@@ -9997,19 +10012,34 @@ function renderHome() {
   document.getElementById('p-home').innerHTML = html;
 }
 
-function doCheckin() {
+function toggleCheckin() {
   const u = cu();
+  const d = u.currentDay;
   const today = new Date().toDateString();
   if (!u.checkedIn) u.checkedIn = {};
-  if (!u.checkedIn[today]) {
-    u.checkedIn[today] = u.currentDay;
+
+  // 兼容老数据：{日期: 天数} → 转成 {天数: 日期}
+  const vals = Object.values(u.checkedIn);
+  const hasOldFormat = vals.some(v => typeof v === 'number');
+  if (hasOldFormat) {
+    const newCI = {};
+    Object.entries(u.checkedIn).forEach(([date, day]) => { newCI[day] = date; });
+    u.checkedIn = newCI;
+  }
+
+  if (u.checkedIn[d]) {
+    // 已打卡 → 取消
+    delete u.checkedIn[d];
+    saveUsers();
+    alert('已取消打卡 Day ' + d);
+  } else {
+    // 未打卡 → 打卡
+    u.checkedIn[d] = today;
     if (u.currentDay < TOTAL_DAYS) u.currentDay++;
     saveUsers();
-    alert('🎉 打卡成功，Day ' + u.currentDay);
-    renderHome();
-  } else {
-    alert('今天已经打卡了');
+    alert('🎉 打卡成功，Day ' + d);
   }
+  renderHome();
 }
 
 // ===== 词汇 =====
@@ -10368,7 +10398,7 @@ function renderUsers() {
   html += '<div class="user-grid">';
 
   users.forEach((u, i) => {
-    const s = Object.keys(u.checkedIn || {}).length;
+    const s = getStreak(u);
     const level = u.level || '进阶';
     html += `<div class="user-card" onclick="pickUser(${i})">
       <div class="user-card-img">${getAvatarHtml(u.avatar)}</div>
@@ -10582,7 +10612,7 @@ function switchUser(i) {
 // ===== 计划概括 =====
 function renderPlan() {
   const u = cu();
-  const streak = Object.keys(u.checkedIn || {}).length;
+  const streak = getStreak(u);
 
   let html = nav('🗺️ 21天计划', true);
   html += `<div class="plan-page">
@@ -10595,7 +10625,7 @@ function renderPlan() {
     </div>`;
 
   // 构建已打卡天数集合
-  const checkedDays = new Set(Object.values(u.checkedIn || {}));
+  const checkedDays = getCheckedDays(u);
 
   // 词汇
   html += `<div class="collapse-block open" onclick="this.classList.toggle('open')">
@@ -10673,7 +10703,7 @@ function jump(mod, day) {
 function renderManage() {
   let html = nav('用户管理', true) + '<div class="manage-page">';
   users.forEach((u, i) => {
-    const s = Object.keys(u.checkedIn || {}).length;
+    const s = getStreak(u);
     html += `<div class="manage-row">
       <div class="manage-avatar">${getAvatarHtml(u.avatar)}</div>
       <div class="manage-body">
@@ -10708,7 +10738,18 @@ function renderCalendar() {
 
   let html = nav('📅 日历', true) + '<div class="cal-page">';
   const map = {};
-  Object.keys(u.checkedIn || {}).forEach(d => { map[new Date(d).toDateString()] = true; });
+  const ci = u.checkedIn || {};
+  Object.entries(ci).forEach(([k, v]) => {
+    let dateStr;
+    if (typeof v === 'number') {
+      // 旧格式 {日期: 天数}，k是日期
+      dateStr = new Date(k).toDateString();
+    } else {
+      // 新格式 {天数: 日期}，v是日期
+      dateStr = new Date(v).toDateString();
+    }
+    if (dateStr !== 'Invalid Date') map[dateStr] = true;
+  });
 
   const first = new Date(y, m, 1);
   const last = new Date(y, m + 1, 0);
