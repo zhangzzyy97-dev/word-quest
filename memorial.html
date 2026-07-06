@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Word Quest · 第一个项目纪念</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 60px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+    color: #0f172a;
+  }
+
+  .memorial-header {
+    text-align: center;
+    padding: 20px 40px 40px;
+  }
+  .memorial-header .tag {
+    font-size: 13px;
+    color: #0284c7;
+    letter-spacing: 3px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .memorial-header h1 {
+    font-size: 52px;
+    font-weight: 800;
+    color: #0c4a6e;
+    letter-spacing: 8px;
+    margin-bottom: 8px;
+  }
+  .memorial-header .sub {
+    font-size: 16px;
+    color: #64748b;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .memorial-header .meta {
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    color: #0ea5e9;
+    font-weight: 600;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+
+  /* 手机框 */
+  .phone-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 36px;
+    justify-content: center;
+    max-width: 1200px;
+    padding: 0 20px;
+  }
+  .phone {
+    width: 320px;
+    height: 640px;
+    background: #fff;
+    border-radius: 40px;
+    box-shadow: 0 25px 80px rgba(2, 132, 199, 0.12), 0 0 0 10px #1e293b, 0 0 0 12px #0f172a;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 24px;
+    background: #0f172a;
+    border-radius: 0 0 16px 16px;
+    z-index: 100;
+  }
+  .phone-label {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0c4a6e;
+    letter-spacing: 1px;
+  }
+  .phone-label small {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ===== 手机内通用 ===== */
+  .app {
+    width: 100%; height: 100%;
+    background: #f8fafc;
+    font-size: 13px;
+    color: #1e293b;
+    overflow: hidden;
+    position: relative;
+  }
+  .nav {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px;
+    font-weight: 600;
+    position: relative;
+    z-index: 10;
+  }
+  .nav .back { color: #0284c7; font-weight: 500; font-size: 14px; }
+  .nav .title { font-size: 14px; font-weight: 600; color: #0f172a; }
+  .nav .right { color: #0284c7; font-size: 12px; font-weight: 500; }
+  .body {
+    padding: 14px 16px;
+    height: calc(100% - 48px);
+    overflow: hidden;
+  }
+
+  /* ===== 首页 ===== */
+  .hero {
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #f0fdfa 100%);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #bae6fd;
+    margin-bottom: 16px;
+  }
+  .hero-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .hero-avatar {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fbbf24, #f97316);
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .hero-info { flex: 1; min-width: 0; }
+  .hero-name { font-size: 14px; font-weight: 700; color: #0c4a6e; margin-bottom: 3px; }
+  .hero-desc { font-size: 11px; color: #0369a1; }
+  .hero-stats { display: flex; gap: 12px; }
+  .stat {
+    flex: 1;
+    text-align: center;
+    background: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 8px 4px;
+    border: 1px solid rgba(186, 230, 253, 0.5);
+  }
+  .stat-num { font-size: 15px; font-weight: 700; color: #0369a1; }
+  .stat-lbl { font-size: 10px; color: #0ea5e9; margin-top: 2px; }
+
+  .sec-h {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px; margin-top: 4px;
+  }
+  .sec-h h4 { font-size: 13px; font-weight: 600; color: #0f172a; }
+  .sec-h span { font-size: 11px; color: #94a3b8; }
+
+  .card-row {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 7px;
+  }
+  .card-icon { font-size: 18px; width: 24px; text-align: center; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-t { font-size: 13px; font-weight: 600; color: #1e293b; }
+  .card-d { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+  .card-a { color: #cbd5e1; font-size: 14px; }
+
+  .tools {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-top: 10px;
+  }
+  .tool {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 12px 4px;
+    text-align: center;
+  }
+  .tool-icon { font-size: 20px; margin-bottom: 4px; }
+  .tool-t { font-size: 10px; font-weight: 600; color: #0c4a6e; }
+  .tool-s { font-size: 9px; color: #0369a1; margin-top: 2px; }
+
+  .foot-brand {
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+  }
+  .foot-brand .bn { font-size: 10px; font-weight: 700; color: #0284c7; letter-spacing: 3px; }
+  .foot-brand .bq { font-size: 8px; color: #cbd5e1; margin-top: 4px; font-style: italic; }
+
+  /* ===== 词汇页 ===== */
+  .v-tabs {
+    display: flex; gap: 5px; margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .v-tab {
+    padding: 5px 10px;
+    font-size: 10px;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .v-tab.on {
+    background: #0284c7;
+    color: white;
+    border-color: #0284c7;
+  }
+  .v-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .v-en { flex: 1; font-size: 12px; font-weight: 600; color: #1e293b; }
+  .v-cn { font-size: 10px; color: #94a3b8; }
+  .v-star { color: #e2e8f0; font-size: 13px; }
+  .v-star.on { color: #f59e0b; }
+  .v-scene {
+    text-align: center; font-size: 10px; color: #94a3b8;
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  /* ===== 实战页 ===== */
+  .p-label {
+    font-size: 12px; font-weight: 600; color: #0284c7;
+    margin-bottom: 8px; margin-top: 4px;
+  }
+  .p-expr {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 7px;
+  }
+  .p-en { font-size: 12px; font-weight: 600; color: #0284c7; margin-bottom: 3px; }
+  .p-cn { font-size: 10px; color: #64748b; }
+
+  .d-name { font-size: 9px; color: #94a3b8; margin-bottom: 3px; font-weight: 500; }
+  .d-bubble {
+    max-width: 78%;
+    padding: 7px 11px;
+    border-radius: 14px;
+    font-size: 10px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .d-a { background: #f1f5f9; color: #334155; border-bottom-left-radius: 5px; }
+  .d-b { background: #e0f2fe; color: #0c4a6e; margin-left: auto; border-bottom-right-radius: 5px; }
+
+  .p-compare {
+    font-size: 10px; color: #64748b; line-height: 1.6;
+    padding: 9px 12px; background: white;
+    border: 1px solid #e2e8f0; border-radius: 10px;
+  }
+  .p-compare b { color: #0284c7; }
+
+  /* ===== 雅思页 ===== */
+  .i-topic {
+    font-size: 11px; color: #64748b; margin-bottom: 6px;
+  }
+  .i-tabs {
+    display: flex; gap: 0; margin-bottom: 14px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .i-tab {
+    flex: 1; text-align: center;
+    padding: 8px 0;
+    font-size: 11px;
+    color: #94a3b8;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+  }
+  .i-tab.on {
+    color: #0284c7;
+    border-bottom-color: #0284c7;
+    font-weight: 600;
+  }
+  .i-q {
+    font-size: 12px; font-weight: 600; color: #0c4a6e;
+    margin-bottom: 8px;
+    padding: 9px 12px;
+    background: #f0f9ff;
+    border-radius: 10px;
+    border-left: 3px solid #0284c7;
+    line-height: 1.5;
+  }
+  .i-a {
+    font-size: 10px; color: #475569; line-height: 1.6;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+  }
+  .i-pt { font-size: 12px; font-weight: 600; color: #be185d; margin: 14px 0 7px; }
+  .i-pv {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    background: white;
+    border: 1px solid #fbcfe8;
+    border-radius: 8px;
+    margin-bottom: 5px;
+  }
+  .i-pv .en { flex: 1; font-size: 10px; font-weight: 600; color: #be185d; }
+  .i-pv .cn { font-size: 9px; color: #f472b6; }
+  .i-pv .star { color: #fce7f3; font-size: 11px; }
+  .i-pv .star.on { color: #f472b6; }
+
+  /* ===== 计划页 ===== */
+  .plan-head {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .plan-avatar {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #22d3ee, #3b82f6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .plan-info { flex: 1; min-width: 0; }
+  .plan-n { font-size: 12px; font-weight: 600; color: #0f172a; }
+  .plan-p { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+  .plan-bar { height: 5px; background: #f1f5f9; border-radius: 3px; margin-top: 5px; }
+  .plan-fill { width: 42%; height: 100%; background: #0284c7; border-radius: 3px; }
+
+  .col-h {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 12px; font-weight: 600; color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .col-h .arrow { color: #94a3b8; font-size: 14px; }
+  .day-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+    margin-bottom: 14px;
+  }
+  .day-card {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 9px;
+  }
+  .day-tag {
+    width: 20px; height: 20px;
+    background: #0284c7;
+    color: white;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .day-tag.done { background: #10b981; }
+  .day-text { flex: 1; min-width: 0; }
+  .day-tt { font-size: 9px; font-weight: 600; }
+
+  /* ===== 用户管理页 ===== */
+  .u-card {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 7px;
+  }
+  .u-avatar {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .u-info { flex: 1; min-width: 0; }
+  .u-name { font-size: 12px; font-weight: 600; }
+  .u-desc { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+  .u-del { font-size: 11px; color: #ef4444; font-weight: 500; }
+
+  .add-btn {
+    margin-top: 18px;
+    padding: 12px;
+    background: white;
+    border: 1px dashed #94a3b8;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0284c7;
+  }
+  .alan-tip {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  /* ===== 底部大统计 ===== */
+  .stats-big {
+    width: 100%;
+    max-width: 1200px;
+    padding: 50px 40px;
+    background: linear-gradient(180deg, #f0f9ff, #e0f2fe);
+    border-radius: 24px;
+    margin: 20px 0;
+    border: 1px solid #bae6fd;
+  }
+  .stats-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0c4a6e;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .s-item {
+    text-align: center;
+    padding: 20px 10px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #bae6fd;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.05);
+  }
+  .s-num {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0284c7;
+    margin-bottom: 6px;
+  }
+  .s-lbl {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .s-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+
+  /* ===== 结尾 ===== */
+  .memorial-foot {
+    text-align: center;
+    padding: 40px 20px 60px;
+  }
+  .memorial-foot .sword {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  .memorial-foot .quote {
+    font-size: 18px;
+    font-style: italic;
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto 12px;
+    line-height: 1.8;
+  }
+  .memorial-foot .quote-cn {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 30px;
+  }
+  .memorial-foot .sign {
+    font-size: 13px;
+    color: #0369a1;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .memorial-foot .date {
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 头部 -->
+  <div class="memorial-header">
+    <div class="tag">🗡️ FIRST PROJECT</div>
+    <h1>WORD QUEST</h1>
+    <div class="sub">21天英语打怪学习站</div>
+    <div class="meta">v1.5 · 2026.07.05 - 2026.07.06 · 两个深夜 · 从零到一</div>
+    <div style="margin-top:16px; font-size:12px; color:#94a3b8;">
+      📎 <span style="color:#0284c7;">word-quest.app</span>
+      <span style="margin:0 8px; color:#cbd5e1;">·</span>
+      <span style="color:#0284c7;">github.com/zzz/word-quest</span>
+    </div>
+  </div>
+
+  <!-- 数据大统计 -->
+  <div class="stats-big">
+    <div class="stats-title">项目档案</div>
+    <div class="stats-grid">
+      <div class="s-item">
+        <div class="s-num">571K</div>
+        <div class="s-lbl">单文件体积</div>
+        <div class="s-sub">HTML+CSS+JS全内联<br>0依赖 · 0网络请求</div>
+      </div>
+      <div class="s-item">
+        <div class="s-num">770</div>
+        <div class="s-lbl">核心词汇</div>
+        <div class="s-sub">5大类 × 21天<br>中英对照 · 按场景分类</div>
+      </div>
+      <div class="s-item">
+        <div class="s-num">166</div>
+        <div class="s-lbl">雅思口语题</div>
+        <div class="s-sub">Part1/2/3全覆盖<br>附高分表达</div>
+      </div>
+      <div class="s-item">
+        <div class="s-num">9</div>
+        <div class="s-lbl">职业路径</div>
+        <div class="s-sub">× 3档水平<br>自动生成21天计划</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第一行：首页 + 词汇 -->
+  <div>
+    <div class="section-label" style="max-width:1200px; margin:0 auto 16px; padding-left:20px;">界面总览 · 核心页面</div>
+    <div class="phone-row">
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="app">
+            <div class="nav">
+              <span class="back"></span>
+              <span class="title"></span>
+              <span class="right">管理 ›</span>
+            </div>
+            <div class="body">
+              <div class="hero">
+                <div class="hero-top">
+                  <div class="hero-avatar">🍸</div>
+                  <div class="hero-info">
+                    <div class="hero-name">Hi，Zzz</div>
+                    <div class="hero-desc">Day 10 · 已打卡 5 天</div>
+                  </div>
+                </div>
+                <div class="hero-stats">
+                  <div class="stat"><div class="stat-num">5/21</div><div class="stat-lbl">进度</div></div>
+                  <div class="stat"><div class="stat-num">Day 10</div><div class="stat-lbl">当前</div></div>
+                  <div class="stat"><div class="stat-num">23</div><div class="stat-lbl">收藏</div></div>
+                </div>
+              </div>
+
+              <div class="sec-h"><h4>今日学习</h4><span>Day 10</span></div>
+
+              <div class="card-row">
+                <div class="card-icon">📚</div>
+                <div class="card-body">
+                  <div class="card-t">词汇副本</div>
+                  <div class="card-d">B2B SaaS 产品术语</div>
+                </div>
+                <div class="card-a">›</div>
+              </div>
+              <div class="card-row">
+                <div class="card-icon">💬</div>
+                <div class="card-body">
+                  <div class="card-t">实战副本</div>
+                  <div class="card-d">跨部门会议沟通</div>
+                </div>
+                <div class="card-a">›</div>
+              </div>
+              <div class="card-row">
+                <div class="card-icon">🎯</div>
+                <div class="card-body">
+                  <div class="card-t">雅思口语</div>
+                  <div class="card-d">Technology 主题</div>
+                </div>
+                <div class="card-a">›</div>
+              </div>
+
+              <div class="sec-h" style="margin-top:16px;"><h4>⚡ 工具</h4></div>
+              <div class="tools">
+                <div class="tool">
+                  <div class="tool-icon">🎒</div>
+                  <div class="tool-t">装备库</div>
+                  <div class="tool-s">收藏</div>
+                </div>
+                <div class="tool">
+                  <div class="tool-icon">📅</div>
+                  <div class="tool-t">打卡日历</div>
+                  <div class="tool-s">记录</div>
+                </div>
+                <div class="tool">
+                  <div class="tool-icon">🗺️</div>
+                  <div class="tool-t">21天计划</div>
+                  <div class="tool-s">总览</div>
+                </div>
+              </div>
+
+              <div class="foot-brand">
+                <div class="bn">🗡 WORD QUEST</div>
+                <div class="bq">The limits of my language mean the limits of my world.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">01 首页<small>一屏掌握全部进度</small></div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="app">
+            <div class="nav">
+              <span class="back">‹ 返回</span>
+              <span class="title">词汇副本 · Day 10</span>
+              <span class="right">⭐ 4</span>
+            </div>
+            <div class="body">
+              <div class="v-tabs">
+                <span class="v-tab on">B2B产品</span>
+                <span class="v-tab">出海电商</span>
+                <span class="v-tab">数据分析</span>
+                <span class="v-tab">习语</span>
+                <span class="v-tab">易混淆</span>
+              </div>
+
+              <div class="v-item">
+                <div class="v-en">value proposition</div>
+                <div class="v-cn">价值主张</div>
+                <div class="v-star">☆</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">go-to-market strategy</div>
+                <div class="v-cn">上市策略</div>
+                <div class="v-star on">⭐</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">churn rate</div>
+                <div class="v-cn">流失率</div>
+                <div class="v-star">☆</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">customer lifecycle</div>
+                <div class="v-cn">客户生命周期</div>
+                <div class="v-star">☆</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">onboarding flow</div>
+                <div class="v-cn">入驻流程</div>
+                <div class="v-star on">⭐</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">product-market fit</div>
+                <div class="v-cn">产品市场契合</div>
+                <div class="v-star">☆</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">stakeholder alignment</div>
+                <div class="v-cn">利益相关者对齐</div>
+                <div class="v-star">☆</div>
+              </div>
+              <div class="v-item">
+                <div class="v-en">pricing tier</div>
+                <div class="v-cn">定价档位</div>
+                <div class="v-star">☆</div>
+              </div>
+
+              <div class="v-scene">📍 场景：B端产品定价评审会</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">02 词汇副本<small>5大分类 · 按职业配比</small></div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="app">
+            <div class="nav">
+              <span class="back">‹ 返回</span>
+              <span class="title">实战副本 · Day 10</span>
+              <span class="right">⭐ 2</span>
+            </div>
+            <div class="body">
+              <div class="p-label">💡 核心表达</div>
+              
+              <div class="p-expr">
+                <div class="p-en">Let's circle back on this</div>
+                <div class="p-cn">我们之后再回头聊这个</div>
+              </div>
+              <div class="p-expr">
+                <div class="p-en">Let's take this offline</div>
+                <div class="p-cn">这个私下聊（不在会上展开）</div>
+              </div>
+              <div class="p-expr">
+                <div class="p-en">Let's align on this</div>
+                <div class="p-cn">我们就这个达成一致</div>
+              </div>
+
+              <div class="p-label" style="margin-top:14px;">🗣️ 场景对话</div>
+
+              <div class="d-name">PM (Zzz)</div>
+              <div class="d-bubble d-a">
+                Can we circle back on the pricing tier discussion?
+              </div>
+              <div class="d-name">Engineering Lead</div>
+              <div class="d-bubble d-b">
+                Sure, let's take that offline after the sync.
+              </div>
+              <div class="d-name">PM (Zzz)</div>
+              <div class="d-bubble d-a">
+                Sounds good. Let's align on the timeline first.
+              </div>
+
+              <div class="p-label" style="margin-top:14px;">⚖️ 用法辨析</div>
+              <div class="p-compare">
+                <b>circle back</b> 偏"回头再确认/补充讨论"<br>
+                <b>take offline</b> 偏"不在大会上讨论，小范围私下聊"
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">03 实战副本<small>场景对话 · 学了就用</small></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 第二行：雅思 + 计划 + 用户 -->
+  <div>
+    <div class="section-label" style="max-width:1200px; margin:0 auto 16px; padding-left:20px;">更多页面</div>
+    <div class="phone-row">
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="app">
+            <div class="nav">
+              <span class="back">‹ 返回</span>
+              <span class="title">雅思口语 · Day 10</span>
+              <span class="right">⭐ 1</span>
+            </div>
+            <div class="body">
+              <div class="i-topic">📌 主题：Technology</div>
+              
+              <div class="i-tabs">
+                <div class="i-tab on">Part 1</div>
+                <div class="i-tab">Part 2</div>
+                <div class="i-tab">Part 3</div>
+              </div>
+
+              <div class="i-q">
+                Q: Do you think technology makes people's lives easier?
+              </div>
+              <div class="i-a">
+                Absolutely. I think the most transformative change is how we communicate — distance is no longer a barrier. That said, it's a double-edged sword...
+              </div>
+
+              <div class="i-pt">📝 高分短语</div>
+              
+              <div class="i-pv">
+                <div class="en">double-edged sword</div>
+                <div class="cn">双刃剑</div>
+                <div class="star">☆</div>
+              </div>
+              <div class="i-pv">
+                <div class="en">transformative change</div>
+                <div class="cn">革命性变化</div>
+                <div class="star on">⭐</div>
+              </div>
+              <div class="i-pv">
+                <div class="en">paradigm shift</div>
+                <div class="cn">范式转变</div>
+                <div class="star">☆</div>
+              </div>
+              <div class="i-pv">
+                <div class="en">technological advancement</div>
+                <div class="cn">技术进步</div>
+                <div class="star">☆</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">04 雅思口语<small>21主题 · 三部分全覆盖</small></div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="app">
+            <div class="nav">
+              <span class="back">‹ 返回</span>
+              <span class="title">21天计划</span>
+              <span class="right"></span>
+            </div>
+            <div class="body">
+              <div class="plan-head">
+                <div class="plan-avatar">🧑‍💼</div>
+                <div class="plan-info">
+                  <div class="plan-n">Zzz · B端产品 · 高阶</div>
+                  <div class="plan-p">5/21 已打卡 · 23.8%</div>
+                  <div class="plan-bar"><div class="plan-fill"></div></div>
+                </div>
+              </div>
+
+              <div class="col-h">
+                <span>📚 词汇副本 (21天)</span>
+                <span class="arrow">▾</span>
+              </div>
+              <div class="day-grid">
+                <div class="day-card"><div class="day-tag done">1</div><div class="day-text"><div class="day-tt">产品基础术语</div></div></div>
+                <div class="day-card"><div class="day-tag done">2</div><div class="day-text"><div class="day-tt">用户研究方法</div></div></div>
+                <div class="day-card"><div class="day-tag done">3</div><div class="day-text"><div class="day-tt">竞品分析框架</div></div></div>
+                <div class="day-card"><div class="day-tag done">4</div><div class="day-text"><div class="day-tt">需求优先级</div></div></div>
+                <div class="day-card"><div class="day-tag done">5</div><div class="day-text"><div class="day-tt">PRD撰写</div></div></div>
+                <div class="day-card"><div class="day-tag">6</div><div class="day-text"><div class="day-tt">定价策略</div></div></div>
+                <div class="day-card"><div class="day-tag">7</div><div class="day-text"><div class="day-tt">增长策略</div></div></div>
+                <div class="day-card"><div class="day-tag">8</div><div class="day-text"><div class="day-tt">数据指标</div></div></div>
+              </div>
+
+              <div class="col-h">
+                <span>💬 实战副本 (21天)</span>
+                <span class="arrow">▸</span>
+              </div>
+
+              <div class="col-h">
+                <span>🎯 雅思口语 (21天)</span>
+                <span class="arrow">▸</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">05 21天计划总览<small>全局进度一目了然</small></div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="app">
+            <div class="nav">
+              <span class="back">‹ 返回</span>
+              <span class="title">用户管理</span>
+              <span class="right"></span>
+            </div>
+            <div class="body">
+              <div class="u-card">
+                <div class="u-avatar" style="background:linear-gradient(135deg,#fbbf24,#f97316);">🍸</div>
+                <div class="u-info">
+                  <div class="u-name">Zzz</div>
+                  <div class="u-desc">B端产品 · 高阶 · Day 10 · 23收藏</div>
+                </div>
+                <div class="u-del">删除</div>
+              </div>
+              <div class="u-card">
+                <div class="u-avatar" style="background:linear-gradient(135deg,#22d3ee,#3b82f6);">🧑‍💼</div>
+                <div class="u-info">
+                  <div class="u-name">Alex</div>
+                  <div class="u-desc">活动运营 · 进阶 · Day 3 · 8收藏</div>
+                </div>
+                <div class="u-del">删除</div>
+              </div>
+              <div class="u-card">
+                <div class="u-avatar" style="background:linear-gradient(135deg,#a78bfa,#ec4899);">🎨</div>
+                <div class="u-info">
+                  <div class="u-name">Cris</div>
+                  <div class="u-desc">UI设计师 · 进阶 · Day 7 · 15收藏</div>
+                </div>
+                <div class="u-del">删除</div>
+              </div>
+
+              <div class="add-btn">
+                ＋ 添加新用户
+              </div>
+              <div class="alan-tip">
+                欢迎 Alan Cris 特邀来试 ✨
+              </div>
+
+              <div style="margin-top:20px; padding-top:14px; border-top:1px solid #e2e8f0;">
+                <div style="font-size:11px; font-weight:600; color:#64748b; margin-bottom:8px;">🎲 自动生成逻辑</div>
+                <div style="font-size:10px; color:#94a3b8; line-height:1.8;">
+                  • 9个职业方向权重配比<br>
+                  • 3档水平调节每日词量<br>
+                  • 21天不重复算法<br>
+                  • localStorage 独立存档
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">06 多角色系统<small>一人一号 · 独立成长</small></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 技术特性 -->
+  <div class="stats-big" style="background: linear-gradient(180deg, #f8fafc, #f1f5f9); border-color: #cbd5e1;">
+    <div class="stats-title" style="color:#475569;">技术特性</div>
+    <div class="stats-grid">
+      <div class="s-item" style="border-color:#cbd5e1;">
+        <div class="s-num" style="font-size:28px; color:#475569;">🗄️</div>
+        <div class="s-lbl">单文件架构</div>
+        <div class="s-sub">HTML + JS + CSS 全内联<br>一个文件走天下</div>
+      </div>
+      <div class="s-item" style="border-color:#cbd5e1;">
+        <div class="s-num" style="font-size:28px; color:#475569;">📴</div>
+        <div class="s-lbl">完全离线</div>
+        <div class="s-sub">零网络请求 · 零外链依赖<br>厕所也能用</div>
+      </div>
+      <div class="s-item" style="border-color:#cbd5e1;">
+        <div class="s-num" style="font-size:28px; color:#475569;">💾</div>
+        <div class="s-lbl">本地存储</div>
+        <div class="s-sub">localStorage 持久化<br>多用户独立存档</div>
+      </div>
+      <div class="s-item" style="border-color:#cbd5e1;">
+        <div class="s-num" style="font-size:28px; color:#475569;">📱</div>
+        <div class="s-lbl">移动端优先</div>
+        <div class="s-sub">右滑返回 · 底部导航<br>大按钮好点击</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目故事 -->
+  <div style="width:100%; max-width:1200px; padding:0 40px;">
+    <div class="section-label" style="padding-left:4px;">项目故事 · 两个深夜的诞生记</div>
+    <div style="background:white; border:1px solid #e2e8f0; border-radius:20px; padding:36px 40px; display:grid; grid-template-columns:1fr 1fr; gap:30px 50px;">
+      
+      <div>
+        <div style="font-size:15px; font-weight:700; color:#0c4a6e; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <span style="width:24px; height:24px; border-radius:6px; background:#e0f2fe; display:flex; align-items:center; justify-content:center; font-size:13px;">📅</span>
+          时间线
+        </div>
+        <div style="position:relative; padding-left:20px; border-left:2px solid #bae6fd;">
+          <div style="margin-bottom:14px; position:relative;">
+            <div style="position:absolute; left:-26px; top:3px; width:10px; height:10px; border-radius:50%; background:#0284c7;"></div>
+            <div style="font-size:11px; color:#94a3b8; font-weight:500;">Day 1 · 深夜</div>
+            <div style="font-size:12px; color:#334155; margin-top:2px;">从 0 写出第一个版本，21天游戏化打怪框架落地</div>
+          </div>
+          <div style="margin-bottom:14px; position:relative;">
+            <div style="position:absolute; left:-26px; top:3px; width:10px; height:10px; border-radius:50%; background:#0284c7;"></div>
+            <div style="font-size:11px; color:#94a3b8; font-weight:500;">Day 1 · 凌晨</div>
+            <div style="font-size:12px; color:#334155; margin-top:2px;">三角色内容融合、9职业×3水平自动生成算法上线</div>
+          </div>
+          <div style="margin-bottom:14px; position:relative;">
+            <div style="position:absolute; left:-26px; top:3px; width:10px; height:10px; border-radius:50%; background:#ef4444;"></div>
+            <div style="font-size:11px; color:#94a3b8; font-weight:500;">Day 2 · 凌晨 03:00 💥</div>
+            <div style="font-size:12px; color:#334155; margin-top:2px;">误删核心代码 → 白屏事故 → 回退到 multi_user 稳定版</div>
+          </div>
+          <div style="margin-bottom:14px; position:relative;">
+            <div style="position:absolute; left:-26px; top:3px; width:10px; height:10px; border-radius:50%; background:#10b981;"></div>
+            <div style="font-size:11px; color:#94a3b8; font-weight:500;">Day 2 · 白天</div>
+            <div style="font-size:12px; color:#334155; margin-top:2px;">逐步恢复功能 → 莫兰迪冰蓝配色定稿 → 品牌footer上线</div>
+          </div>
+          <div style="position:relative;">
+            <div style="position:absolute; left:-26px; top:3px; width:10px; height:10px; border-radius:50%; background:#0284c7;"></div>
+            <div style="font-size:11px; color:#94a3b8; font-weight:500;">Day 2 · 深夜</div>
+            <div style="font-size:12px; color:#334155; margin-top:2px;">v1.5 稳定版封版 · 第一个独立前端项目完成 🎉</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:15px; font-weight:700; color:#0c4a6e; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <span style="width:24px; height:24px; border-radius:6px; background:#fef3c7; display:flex; align-items:center; justify-content:center; font-size:13px;">💡</span>
+          踩过的坑 & 学到的
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="padding:10px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px;">
+            <div style="font-size:12px; font-weight:600; color:#b91c1c; margin-bottom:2px;">❌ 白屏事故</div>
+            <div style="font-size:11px; color:#7f1d1d; line-height:1.6;">迭代太快，全量替换代码把核心逻辑删没了。<b>教训：改单页应用必须先备份，改完强制跑语法检查。</b></div>
+          </div>
+          <div style="padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px;">
+            <div style="font-size:12px; font-weight:600; color:#166534; margin-bottom:2px;">✅ 单文件架构真香</div>
+            <div style="font-size:11px; color:#14532d; line-height:1.6;">HTML/CSS/JS 全内联，一个文件丢手机里就能用，零部署零依赖，完全离线。</div>
+          </div>
+          <div style="padding:10px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px;">
+            <div style="font-size:12px; font-weight:600; color:#1e40af; margin-bottom:2px;">🧠 自己用的产品最好做</div>
+            <div style="font-size:11px; color:#1e3a8a; line-height:1.6;">因为自己就是目标用户，知道什么内容有用、什么交互顺手，省去了需求调研的弯弯绕。</div>
+          </div>
+          <div style="padding:10px 14px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:10px;">
+            <div style="font-size:12px; font-weight:600; color:#7e22ce; margin-bottom:2px;">🎨 配色定调很重要</div>
+            <div style="font-size:11px; color:#6b21a8; line-height:1.6;">莫兰迪冰蓝 #0284c7 + #f8fafc 底色 + 首页渐变 hero，护眼又有质感，比纯白耐看太多。</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 结尾 -->
+  <div class="memorial-foot">
+    <div class="sword">🗡️</div>
+    <div class="quote">"The limits of my language mean the limits of my world."</div>
+    <div class="quote-cn">我语言的边界，就是我世界的边界。 —— 维特根斯坦</div>
+    <div class="sign">WORD QUEST</div>
+    <div class="date">第一个独立前端项目 · 2026年7月 · Made by Zzz</div>
+  </div>
+
+</body>
+</html>
