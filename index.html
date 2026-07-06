@@ -227,6 +227,19 @@ body {
   padding: 4px 10px; background: #fef2f2; border-radius: 6px; cursor: pointer;
 }
 
+.manage-goal {
+  margin-top: 6px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.manage-goal:active { opacity: 0.7; }
+.goal-label { font-size: 10.5px; color: #0284c7; font-weight: 600; flex-shrink: 0; }
+.goal-text { font-size: 11px; color: #0c4a6e; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.goal-edit { font-size: 10.5px; color: #0284c7; flex-shrink: 0; }
+
 /* ===== 词汇页 ===== */
 .vocab-page { padding: 10px 12px 60px; }
 .vocab-top {
@@ -9738,6 +9751,7 @@ function loadUsers() {
   } else {
     users = [{
       id: Date.now(), name: 'Zzz', avatar: AVATAR, currentDay: 1,
+      level: '高阶', job: 'B端产品经理',
       checkedIn: {}, favorites: []
     }];
     saveUsers();
@@ -9842,6 +9856,31 @@ function buildPages() {
     </div>
   </div>`;
   document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // 编辑学习目标弹窗
+  const editGoalHtml = `
+  <div id="editGoalModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;">
+    <div style="background:white;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:20px;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;">修改学习目标</div>
+        <div style="color:#999;font-size:14px;cursor:pointer;" onclick="hideEditGoal()">✕</div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;">英语水平</div>
+        <div id="editLevelOpts" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;">职业方向</div>
+        <div id="editJobOpts" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+        <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:2px;">⚠️ 注意</div>
+        <div style="font-size:10.5px;color:#a16207;line-height:1.5;">修改后会重新生成21天学习内容，当前进度重置为Day 1，打卡记录和收藏保留。</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="confirmEditGoal()">确认修改，重新生成</button>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', editGoalHtml);
 }
 
 function nav(title, showBack, rightTxt, rightFn) {
@@ -10706,11 +10745,18 @@ function renderManage() {
   let html = nav('用户管理', true) + '<div class="manage-page">';
   users.forEach((u, i) => {
     const s = getStreak(u);
+    const goal = u.job || '未设置';
+    const level = u.level || '进阶';
     html += `<div class="manage-row">
       <div class="manage-avatar">${getAvatarHtml(u.avatar)}</div>
       <div class="manage-body">
         <div class="manage-name">${u.name}</div>
         <div class="manage-meta">Day ${u.currentDay} · ${s}天打卡 · ${u.favorites?.length||0}收藏</div>
+        <div class="manage-goal" onclick="event.stopPropagation();showEditGoal(${i})">
+          <span class="goal-label">学习目标</span>
+          <span class="goal-text">${goal} · ${level}</span>
+          <span class="goal-edit">修改 ›</span>
+        </div>
       </div>
       <div class="del-btn" onclick="delUser(${i})">删除</div>
     </div>`;
@@ -10730,6 +10776,76 @@ function delUser(i) {
   if (currentUserIndex >= users.length) currentUserIndex = users.length - 1;
   saveUsers();
   renderManage();
+}
+
+// ===== 编辑学习目标 =====
+let editGoalIndex = -1;
+let editLevel = '进阶';
+let editJob = 'B端产品经理';
+
+const JOB_OPTIONS = ['B端产品经理', 'C端产品经理', '活动运营', '出海增长', '商务拓展', '数据分析', '市场营销', '雅思备考', '随便看看'];
+const LEVEL_OPTIONS = ['入门', '进阶', '高阶'];
+
+function showEditGoal(i) {
+  editGoalIndex = i;
+  const u = users[i];
+  editLevel = u.level || '进阶';
+  editJob = u.job || 'B端产品经理';
+
+  const modal = document.getElementById('editGoalModal');
+  if (modal) modal.style.display = 'flex';
+
+  // 渲染水平选项
+  const lvBox = document.getElementById('editLevelOpts');
+  if (lvBox) {
+    lvBox.innerHTML = LEVEL_OPTIONS.map(l =>
+      `<div class="level-opt ${l===editLevel?'active':''}" onclick="selectEditLevel(this,'${l}')">${l}</div>`
+    ).join('');
+  }
+  // 渲染职业选项
+  const jobBox = document.getElementById('editJobOpts');
+  if (jobBox) {
+    jobBox.innerHTML = JOB_OPTIONS.map(j =>
+      `<div class="job-opt ${j===editJob?'active':''}" onclick="selectEditJob(this,'${j}')">${j}</div>`
+    ).join('');
+  }
+}
+
+function hideEditGoal() {
+  const modal = document.getElementById('editGoalModal');
+  if (modal) modal.style.display = 'none';
+  editGoalIndex = -1;
+}
+
+function selectEditLevel(el, level) {
+  editLevel = level;
+  document.querySelectorAll('#editLevelOpts .level-opt').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selectEditJob(el, job) {
+  editJob = job;
+  document.querySelectorAll('#editJobOpts .job-opt').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function confirmEditGoal() {
+  if (editGoalIndex < 0 || editGoalIndex >= users.length) return;
+  if (!confirm('确定修改学习目标？当前21天进度会重置为Day 1，打卡记录和收藏保留。')) return;
+
+  const u = users[editGoalIndex];
+  u.level = editLevel;
+  u.job = editJob;
+  u.plan = generateUserPlan(editLevel, editJob);
+  u.currentDay = 1;
+  // 打卡和收藏保留
+  saveUsers();
+  hideEditGoal();
+  renderManage();
+  // 如果改的是当前用户，顺便刷新首页
+  if (editGoalIndex === currentUserIndex) {
+    renderHome();
+  }
 }
 
 // ===== 日历 =====
