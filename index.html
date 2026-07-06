@@ -9747,17 +9747,9 @@ function loadUsers() {
 
 function saveUsers() { localStorage.setItem(STORAGE_KEY, JSON.stringify(users)); }
 function cu() { return users[currentUserIndex]; }
-// 计算已打卡天数
-function getStreak() {
-  const ci = cu().checkedIn || {};
-  const vals = Object.values(ci);
-  // 旧格式 {日期: 天数} → 值是数字
-  if (vals.some(v => typeof v === "number")) return vals.length;
-  // 新格式 {天数: 日期} → 键是数字
-  return Object.keys(ci).filter(k => !isNaN(parseInt(k))).length;
-}
 function curDay() { return cu().currentDay; }
-// 获取已打卡天数集合，兼容新旧两种格式
+// ===== 打卡工具函数（统一入口） =====
+// 获取已打卡天数集合（Set<number>），兼容新旧两种格式
 function getCheckedDays(user) {
   const u = user || cu();
   const ci = u.checkedIn || {};
@@ -9772,6 +9764,8 @@ function getCheckedDays(user) {
 }
 // 获取已打卡天数
 function getStreak(user) { return getCheckedDays(user).size; }
+// 判断某一天是否已打卡
+function isDayChecked(day, user) { return getCheckedDays(user).has(day); }
 
 function go(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -9902,12 +9896,11 @@ function prevDay() {
 }
 function bottomBar(showCheckin) {
   const d = cu().currentDay;
-  const checkedDays = getCheckedDays();
-  const dayChecked = checkedDays.has(d);
+  const checked = isDayChecked(d);
   let checkinBtn = '';
   if (showCheckin) {
-    checkinBtn = `<button class="btn ${dayChecked ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCheckin()" style="flex:1.2;">
-      ${dayChecked ? '✓ 已打卡' : '🎉 打卡完成'}
+    checkinBtn = `<button class="btn ${checked ? 'btn-secondary' : 'btn-primary'}" onclick="toggleCheckin()" style="flex:1.2;">
+      ${checked ? '✓ 已打卡 · 点此取消' : '🎉 打卡完成'}
     </button>`;
   }
   return `<div class="bottom-bar">
@@ -10036,18 +10029,16 @@ function toggleCheckin() {
     u.checkedIn = newCI;
   }
 
-  const streak = getStreak();
-
   if (u.checkedIn[d]) {
     // 已打卡 → 取消
     delete u.checkedIn[d];
     saveUsers();
-    alert('已取消打卡 Day ' + d);
+    alert('🗑️ 已取消 Day ' + d + ' 的打卡');
   } else {
     // 未打卡 → 打卡
     u.checkedIn[d] = today;
     saveUsers();
-    alert('🎉 打卡成功，Day ' + d);
+    alert('✅ Day ' + d + ' 打卡成功！');
   }
   renderHome();
 }
@@ -10117,7 +10108,7 @@ function renderVocab() {
     });
   }
 
-  html += bottomBar(true);
+  html += bottomBar(false);
   html += '</div>';
   document.getElementById('p-vocab').innerHTML = html;
 }
@@ -10190,7 +10181,7 @@ function renderPractical() {
     html += '</div>';
   }
 
-  html += bottomBar(true);
+  html += bottomBar(false);
   html += '</div>';
   document.getElementById('p-practical').innerHTML = html;
 }
@@ -10224,7 +10215,7 @@ function renderIelts() {
   </div>`;
 
   html += '<div id="ielts-body"></div>';
-  html += bottomBar(true);
+  html += bottomBar(false);
   html += '</div>';
   document.getElementById('p-ielts').innerHTML = html;
   renderIeltsBody(data);
