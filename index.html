@@ -9755,7 +9755,6 @@ function loadUsers() {
   } catch (e) {
     console.warn('读取失败:', e);
   }
-  if (!saved) {
   if (saved) {
     users = JSON.parse(saved);
   } else {
