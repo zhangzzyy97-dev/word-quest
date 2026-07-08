@@ -493,6 +493,8 @@ body {
 .cal-cell.done { background: #10b981; color: white; }
 .cal-cell.today { background: #f59e0b; color: white; font-weight: 700; }
 .cal-cell.future { color: #ccc; }
+.cal-cell.clickable { cursor: pointer; transition: transform .15s; }
+.cal-cell.clickable:active { transform: scale(0.9); }
 
 .empty { text-align: center; padding: 40px 20px; color: #bbb; font-size: 13px; }
 
@@ -9747,7 +9749,13 @@ const AVATAR = 'https://s.coze.cn/image/Ym8t3WRHi6s/';
 const TOTAL_DAYS = 21;
 
 function loadUsers() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  let saved = null;
+  try {
+    saved = localStorage.getItem(STORAGE_KEY);
+  } catch (e) {
+    console.warn('读取失败:', e);
+  }
+  if (!saved) {
   if (saved) {
     users = JSON.parse(saved);
   } else {
@@ -9761,7 +9769,13 @@ function loadUsers() {
   currentUserIndex = 0;
 }
 
-function saveUsers() { localStorage.setItem(STORAGE_KEY, JSON.stringify(users)); }
+function saveUsers() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+  } catch (e) {
+    console.warn('保存失败:', e);
+  }
+}
 function cu() { return users[currentUserIndex]; }
 function curDay() { return cu().currentDay; }
 // ===== 打卡工具函数（统一入口） =====
@@ -10667,10 +10681,12 @@ function pickUser(i) { currentUserIndex = i; go('home'); }
 
 function switchUser(i) {
   currentUserIndex = i;
-  // 刷新当前学习页，更新打卡按钮状态
-  const refreshMap = { vocab: renderVocab, practical: renderPractical, ielts: renderIelts };
-  if (refreshMap[currentModule]) refreshMap[currentModule]();
-  renderHome();
+  // 重置全局状态，避免不同用户间串台
+  currentModule = 'vocab';
+  ieltsTab = 'part1';
+  favTab = 'vocab';
+  pageStack = ['home'];
+  go('home');
 }
 
 // ===== 计划概括 =====
@@ -10949,13 +10965,45 @@ function renderCalendar() {
     if (map[ds]) cls += ' done';
     if (ds === todayStr) cls += ' today';
     if (dt > now) cls += ' future';
-    html += `<div class="${cls}">${d}</div>`;
+    // 打卡日可点击跳转
+    const clickable = map[ds];
+    const clickHandler = clickable ? `onclick="jumpToCalDay('${ds}')"` : '';
+    if (clickable) cls += ' clickable';
+    html += `<div class="${cls}" ${clickHandler}>${d}</div>`;
   }
   html += '</div>';
   html += `<div style="text-align:center;margin-top:14px;font-size:12px;color:#888">本月打卡 ${count} 天</div>`;
   html += '</div>';
   document.getElementById('p-calendar').innerHTML = html;
 }
+
+// 从日历点击跳转到对应学习日
+function jumpToCalDay(dateStr) {
+  const u = cu();
+  const ci = u.checkedIn || {};
+  // 遍历打卡记录，找到该日期对应的天数
+  let targetDay = null;
+  Object.entries(ci).forEach(([k, v]) => {
+    let dayNum, dayDate;
+    if (typeof v === 'number') {
+      // 旧格式 {日期字符串: 天数}
+      dayNum = v;
+      dayDate = new Date(k).toDateString();
+    } else {
+      // 新格式 {天数: 日期字符串}
+      dayNum = parseInt(k);
+      dayDate = new Date(v).toDateString();
+    }
+    if (dayDate === dateStr) targetDay = dayNum;
+  });
+  if (targetDay && targetDay >= 1 && targetDay <= TOTAL_DAYS) {
+    cu().currentDay = targetDay;
+    saveUsers();
+    currentModule = 'vocab';
+    go('vocab');
+  }
+}
+
 
 // 右滑返回
 function initSwipe() {
