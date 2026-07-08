@@ -10165,7 +10165,7 @@ function renderVocab() {
     });
   }
 
-  html += bottomBar(false);
+  html += bottomBar(true);
   html += '</div>';
   document.getElementById('p-vocab').innerHTML = html;
 }
@@ -10238,7 +10238,7 @@ function renderPractical() {
     html += '</div>';
   }
 
-  html += bottomBar(false);
+  html += bottomBar(true);
   html += '</div>';
   document.getElementById('p-practical').innerHTML = html;
 }
@@ -10272,7 +10272,7 @@ function renderIelts() {
   </div>`;
 
   html += '<div id="ielts-body"></div>';
-  html += bottomBar(false);
+  html += bottomBar(true);
   html += '</div>';
   document.getElementById('p-ielts').innerHTML = html;
   renderIeltsBody(data);
